@@ -171,21 +171,18 @@ KERNEL_DEPMOD_STAGING_DIR := $(call intermediates-dir-for,PACKAGING,depmod_vendo
 KERNEL_MODULE_MOUNTPOINT := vendor
 endif
 
-ifeq ($(TARGET_KERNEL_CLANG_COMPILE),true)
-    ifneq ($(TARGET_KERNEL_CLANG_VERSION),)
-        # Find the clang-* directory containing the specified version
-        KERNEL_CLANG_VERSION := $(shell find $(BUILD_TOP)/prebuilts/clang/host/$(HOST_OS)-x86/ -name AndroidVersion.txt -exec grep -l $(TARGET_KERNEL_CLANG_VERSION) "{}" \; | sed -e 's|/AndroidVersion.txt$$||g;s|^.*/||g')
-    else
-        # Use the default version of clang if TARGET_KERNEL_CLANG_VERSION hasn't been set by the device config
-        KERNEL_CLANG_VERSION := $(LLVM_PREBUILTS_VERSION)
-    endif
-    TARGET_KERNEL_CLANG_PATH ?= $(BUILD_TOP)/prebuilts/clang/host/$(HOST_OS)-x86/$(KERNEL_CLANG_VERSION)/bin
-    ifeq ($(KERNEL_ARCH),arm64)
-        KERNEL_CLANG_TRIPLE ?= CLANG_TRIPLE=aarch64-linux-gnu-
-    else ifeq ($(KERNEL_ARCH),arm)
-        KERNEL_CLANG_TRIPLE ?= CLANG_TRIPLE=arm-linux-gnu-
-    else ifeq ($(KERNEL_ARCH),x86)
-        KERNEL_CLANG_TRIPLE ?= CLANG_TRIPLE=x86_64-linux-gnu-
+ifeq ($(or $(FULL_RECOVERY_KERNEL_BUILD), $(FULL_KERNEL_BUILD)),true)
+# Add host bin out dir to path
+PATH_OVERRIDE := PATH=$(KERNEL_BUILD_OUT_PREFIX)$(HOST_OUT_EXECUTABLES):$$PATH
+ifneq ($(TARGET_KERNEL_CLANG_COMPILE),false)
+    ifeq (,$(filter 5.10, $(TARGET_KERNEL_VERSION)))
+        ifeq ($(KERNEL_ARCH),arm64)
+            KERNEL_CLANG_TRIPLE ?= CLANG_TRIPLE=aarch64-linux-gnu-
+        else ifeq ($(KERNEL_ARCH),arm)
+            KERNEL_CLANG_TRIPLE ?= CLANG_TRIPLE=arm-linux-gnu-
+        else ifeq ($(KERNEL_ARCH),x86)
+            KERNEL_CLANG_TRIPLE ?= CLANG_TRIPLE=x86_64-linux-gnu-
+        endif
     endif
     ifeq ($(KERNEL_CC),)
         KERNEL_CC := CC="$(CCACHE_BIN) clang"
