@@ -185,7 +185,7 @@ ifneq ($(TARGET_KERNEL_CLANG_COMPILE),false)
         endif
     endif
     ifeq ($(KERNEL_CC),)
-        KERNEL_CC := CC="$(CCACHE_BIN) clang"
+        KERNEL_CC := CC="$(CCACHE_BIN) clang" LD=ld.lld
     endif
 endif
 
