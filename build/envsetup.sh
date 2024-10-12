@@ -1,3 +1,6 @@
+CLANG_VERSION=$(build/soong/scripts/get_clang_version.py)
+export LLVM_AOSP_PREBUILTS_VERSION="${CLANG_VERSION}"
+
 function __print_build_functions_help() {
 cat <<EOF
 Additional Build functions:
